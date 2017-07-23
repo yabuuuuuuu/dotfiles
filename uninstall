@@ -1,0 +1,37 @@
+#!/bin/bash
+#set -eux
+set -eu
+
+# $1=target
+function safe_delete () {
+  base="$HOME/"
+  if [ -L "${base}${1}" ]; then
+    echo "INFO: deleted '${1}'"
+    rm "${base}${1}"
+  fi
+}
+
+# bash
+safe_delete ".bash_profile"
+safe_delete ".bashrc"
+
+# zsh
+safe_delete ".zshrc"
+safe_delete ".zshrc_mac"
+safe_delete ".zsh_completions.d"
+safe_delete ".zshrc_local"
+
+# tmux
+safe_delete ".tmux.conf"
+safe_delete ".tmux_mac.conf"
+
+# emacs
+safe_delete ".emacs.d"
+
+# git
+safe_delete ".gitconfig_common"
+safe_delete ".gitconfig"
+safe_delete ".git-authors"
+
+# ssh
+safe_delete ".ssh/config"

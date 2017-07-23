@@ -1,0 +1,6 @@
+[include]
+  path = ~/.gitconfig_common
+
+[user]
+	name = 
+	email = 

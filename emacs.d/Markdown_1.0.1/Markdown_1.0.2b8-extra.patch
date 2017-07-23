@@ -1,0 +1,299 @@
+--- Markdown.pl.orig	2007-07-29 20:58:53.000000000 +0900
++++ Markdown.pl	2007-07-29 22:32:27.000000000 +0900
+@@ -483,6 +483,8 @@
+ 	$text = _DoLists($text);
+ 	$text = _DoCodeBlocks($text);
+ 	$text = _DoBlockQuotes($text);
++	$text = _DoTables($text);
++	$text = _DoDefLists($text);
+ 
+ 	# We already ran _HashHTMLBlocks() before, in Markdown(), but that
+ 	# was to escape raw HTML in the original Markdown source. This time,
+@@ -830,6 +832,287 @@
+ 	return $text;
+ }
+ 
++sub _DoTables {
++#
++# Form HTML tables.
++#
++	my $text = shift;
++	my $less_than_tab = $g_tab_width - 1;
++
++	#
++	# Find tables with leading pipe.
++	#
++	#	| Header 1 | Header 2
++	#	| -------- | --------
++	#	| Cell 1   | Cell 2
++	#	| Cell 3   | Cell 4
++	#
++
++	$text =~ s{
++			^							# Start of a line
++			[ ]{0,$less_than_tab}	# Allowed whitespace.
++			[|]							# Optional leading pipe (present)
++			(.+) \n						# $1: Header row (at least one pipe)
++
++			[ ]{0,$less_than_tab}	# Allowed whitespace.
++			[|] ([ ]*[-:]+[-| :]*) \n	# $2: Header underline
++
++			(							# $3: Cells
++				(?:
++					[ ]*				# Allowed whitespace.
++					[|] .* \n			# Row content.
++				)*
++			)
++			(?=\n|\Z)					# Stop at final double newline.
++		}{
++			my $head	= $1;
++			my $underline	= $2;
++			my $content	= $3;
++
++			# Remove leading pipe for each row.
++			$content	=~ s/^ *\|//mg;
++
++			_ProcessTables($head, $underline, $content);
++		}egmx;
++
++	#
++	# Find tables without leading pipe.
++	#
++	#	Header 1 | Header 2
++	#	-------- | --------
++	#	Cell 1   | Cell 2
++	#	Cell 3   | Cell 4
++	#
++	$text =~ s{
++			^							# Start of a line
++			[ ]{0,$less_than_tab}	# Allowed whitespace.
++			(\S.*[|].*) \n				# $1: Header row (at least one pipe)
++			
++			[ ]{0,$less_than_tab}	# Allowed whitespace.
++			([-:]+[ ]*[|][-| :]*) \n	# $2: Header underline
++			
++			(							# $3: Cells
++				(?:
++					.* [|] .* \n		# Row content
++				)*
++			)
++			(?=\n|\Z)					# Stop at final double newline.
++		}{
++			my $head	= $1;
++			my $underline	= $2;
++			my $content	= $3;
++
++			_ProcessTables($head, $underline, $content);
++		}egmx;
++
++	return $text;
++}
++
++sub trim {
++    my @out = @_;
++    for (@out) {
++        s/^\s+//;
++        s/\s+$//;
++    }
++    return wantarray ? @out : $out[0];
++}
++
++sub rtrim {
++    my @out = @_;
++    for (@out) {
++        s/\s+$//;
++    }
++    return wantarray ? @out : $out[0];
++}
++
++sub _ProcessTables {
++	my $head		= shift;
++	my $underline	= shift;
++	my $content		= shift;
++
++	# Remove any tailing pipes for each line.
++	$head		=~ s/[|] *$//mgx;
++	$underline	=~ s/[|] *$//mgx;
++	$content	=~ s/[|] *$//mgx;
++
++	my @attr;
++	my $n = 0;
++	
++	# Reading alignement from header underline.
++	my @separators	= split(/ *[|] */, $underline);
++	foreach my $s (@separators) {
++		if ($s =~ /^ *-+: *$/){		$attr[$n] = ' align="right"'; }
++		elsif ($s =~ /^ *:-+: *$/){	$attr[$n] = ' align="center"'; }
++		elsif ($s =~ /^ *:-+ *$/){	$attr[$n] = ' align="left"';}
++		else{							$attr[$n] = '';}
++		$n++;
++	}
++	
++	# Creating code spans before splitting the row is an easy way to 
++	# handle a code span containg pipes.
++	$head	= _DoCodeSpans($head);
++	my @headers	= split(/ *[|] */, $head);
++	my $col_count	= $#headers + 1;
++
++	# Write column headers.
++	my $text = "<table>\n";
++	$text .= "<thead>\n";
++	$text .= "<tr>\n";
++	$n = 0;
++	foreach my $header (@headers){
++		$text .= "  <th$attr[$n]>"._RunSpanGamut(trim($header))."</th>\n";
++		$n++;
++	}
++	$text .= "</tr>\n";
++	$text .= "</thead>\n";
++	
++	# Split content by row.
++	my $content0 = $content;
++	chomp $content0;
++	my @rows = split(/\n/, $content0);
++
++	$text .= "<tbody>\n";
++	foreach my $row (@rows) {
++		# Creating code spans before splitting the row is an easy way to 
++		# handle a code span containg pipes.
++		$row = _DoCodeSpans($row);
++
++		
++		# Split row by cell.
++		my @row_cells = split(/ *[|] */, $row, $col_count);
++		## $row_cells = array_pad($row_cells, $col_count, '');
++		
++		$text .= "<tr>\n";
++		$n = 0;
++		foreach my $cell (@row_cells){
++			$text .= "  <td$attr[$n]>"._RunSpanGamut(trim($cell))."</td>\n";
++			$n++;
++		}
++		$text .= "</tr>\n";
++	}
++	$text .= "</tbody>\n";
++	$text .= "</table>";
++	
++	return $text . "\n";
++}
++
++sub _DoDefLists {
++	#
++	# Form HTML definition lists.
++	#
++
++	my $text = shift;
++	my $less_than_tab = $g_tab_width - 1;
++
++	# Re-usable pattern to match any entire dl list:
++	my $whole_list = qr{
++		(								# $1 = whole list
++		  (								# $2
++			[ ]{0,$less_than_tab}
++			((?>.*\S.*\n)+)				# $3 = defined term
++			\n?
++			[ ]{0,$less_than_tab}:[ ]+ # colon starting definition
++		  )
++		  (?s:.+?)
++		  (								# $4
++			  \z
++			|
++			  \n{2,}
++			  (?=\S)
++			  (?!						# Negative lookahead for another term
++				[ ]{0,$less_than_tab}
++				(?: \S.*\n )+?			# defined term
++				\n?
++				[ ]{0,$less_than_tab}:[ ]+ # colon starting definition
++			  )
++			  (?!						# Negative lookahead for another definition
++				[ ]{0,$less_than_tab}:[ ]+ # colon starting definition
++			  )
++		  )
++		)
++	}mx;
++
++	$text =~ s{
++			(?:(?<=\n\n)|\A\n?)
++			$whole_list
++		}{
++			# Re-usable patterns to match list item bullets and number markers:
++			my $list = $1;
++
++			# Turn double returns into triple returns, so that we can make a
++			# paragraph for the last item in a list, if necessary:
++			my $result = trim(_ProcessDefListItems($list));
++			$result = "<dl>\n" . $result . "\n</dl>";
++			$result . "\n\n";
++		}egmx;
++
++	return $text;
++}
++
++sub _ProcessDefListItems {
++#
++#	Process the contents of a single definition list, splitting it
++#	into individual term and definition list items.
++#
++	my $list_str = shift;
++	my $less_than_tab = $g_tab_width - 1;
++	
++	# trim trailing blank lines:
++	$list_str =~ s/\n{2,}\z/\n/;
++
++
++	# Process definition terms.
++	$list_str =~ s{
++		(?:\n\n+|\A\n?)					# leading line
++		(								# definition terms = $1
++			[ ]{0,$less_than_tab}	# leading whitespace
++			(?![:][ ]|[ ])				# negative lookahead for a definition 
++										#   mark (colon) or more whitespace.
++			(?: \S.* \n)+?				# actual term (not whitespace).	
++		)			
++		(?=\n?[ ]{0,3}:[ ])				# lookahead for following line feed 
++										#   with a definition mark.
++	}{
++
++		my @terms = split(/\n/, trim($1));
++		my $text = '';
++		foreach my $term (@terms) {
++			$term = _RunSpanGamut(trim($term));
++			$text .= "\n<dt>" . $term . "</dt>";
++		}
++		$text . "\n";
++	}egmx;
++
++	# Process actual definitions.
++	$list_str =~ s{
++		\n(\n+)?						# leading line = $1
++		[ ]{0,$less_than_tab}		# whitespace before colon
++		[:][ ]+							# definition mark (colon)
++		((?s:.+?))						# definition text = $2
++		(?= \n+ 						# stop at next definition mark,
++			(?:							# next term or end of text
++				[ ]{0,$less_than_tab} [:][ ]	|
++				<dt> | \z
++			)						
++		)					
++	}{
++		my $leading_line	= $1;
++		my $def			= $2;
++
++		if ($leading_line || $def =~ /\n{2,}/) {
++			$def = _RunBlockGamut(_Outdent($def . "\n\n"));
++			$def = "\n". $def ."\n";
++		}
++		else {
++			$def = rtrim($def);
++			$def = _RunSpanGamut(_Outdent($def));
++		}
++
++		"\n<dd>" . $def . "</dd>\n";
++	}egmx;
++
++	return $list_str;
++}
+ 
+ sub _DoLists {
+ #

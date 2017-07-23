@@ -1,0 +1,47 @@
+{
+    "description": "cmd(L) -> EISUU / cmd(R) -> EISUU/KANA(toggle)",
+    "manipulators": [
+        {
+            "from": {
+                "key_code": "left_command",
+                "modifiers": {
+                    "optional": [
+                        "any"
+                    ]
+                }
+            },
+            "to": [
+                {
+                    "key_code": "left_command"
+                }
+            ],
+            "to_if_alone": [
+                {
+                    "key_code": "japanese_eisuu"
+                }
+            ],
+            "type": "basic"
+        },
+        {
+            "from": {
+                "key_code": "right_command",
+                "modifiers": {
+                    "optional": [
+                        "any"
+                    ]
+                }
+            },
+            "to": [
+                {
+                    "key_code": "right_command"
+                }
+            ],
+            "to_if_alone": [
+                {
+                    "key_code": "f19"
+                }
+            ],
+            "type": "basic"
+        }
+    ]
+}
