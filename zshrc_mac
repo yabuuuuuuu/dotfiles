@@ -29,5 +29,9 @@ GIT_DUET_AUTHORS_FILE=~/.git-authors
 PATH=/usr/local/bin:/usr/local/sbin:$PATH
 HOMEBREW_VERBOSE=1
 HOMEBREW_CURL_VERBOSE=1
+
+# github token
 ### tokenをそのままにコミットしないよう注意 ###
 #HOMEBREW_GITHUB_API_TOKEN="SNIP"
+#GITHUB_ACCESS_TOKEN="SNIP"
+
