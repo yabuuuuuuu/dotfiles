@@ -44,4 +44,4 @@ safe_copy "gitconfig_template" ".gitconfig"
 safe_copy "git-authors" ".git-authors"
 
 # ssh
-#safe_link "ssh/config" ".ssh/config"
+safe_copy "ssh/config_template" ".ssh/config"

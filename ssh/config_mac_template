@@ -1,0 +1,10 @@
+Host github.com
+  #IdentityFile SNIP
+
+Host gitlab.com
+  #IdentityFile SNIP
+
+Host *
+  #IdentityFile ~/.ssh/SNIP
+  AddKeysToAgent  yes
+
