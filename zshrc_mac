@@ -14,6 +14,13 @@ fi
 # rbenv
 [[ -d ~/.rbenv  ]] && export PATH=${HOME}/.rbenv/bin:${PATH} && eval "$(rbenv init -)"
 
+# Go lang via brew
+if [ -x "`which go`" ]; then
+  export PATH=$PATH:/usr/local/opt/go/libexec/bin
+  export GOPATH=$HOME/.go
+  export PATH=$PATH:$GOPATH/bin
+fi
+
 # git-duet
 GIT_DUET_AUTHORS_FILE=~/.git-authors
 
