@@ -11,6 +11,9 @@
   interactive = auto
   grep = auto
 
+[init]
+  templatedir = ~/.git_templates
+
 [push]
   # nothing, matching, upstream, simple(default), current
   default = upstream
@@ -20,7 +23,7 @@
   co = checkout
   ci = commit
   br = branch -vva
-  lg = log --graph '--pretty=format:"%C(yellow)%h%Creset%C(cyan)(%an)%Creset%C(red)%d%Creset %ad %C(Green)%s%Creset"'
+  lg = log --graph '--pretty=format:"%C(yellow)%h%Creset%C(cyan)(%an<%ae>/%cn<%ce>)%Creset%C(red)%d%Creset %ad %C(Green)%s%Creset"'
   dci = duet-commit
   drv = duet-revert
   dmg = duet-merge
@@ -29,8 +32,13 @@
   # %H      コミットのハッシュ
   # %h      コミットのハッシュ (短縮版)
   # %ad     Author の日付
-  # %an     Author の名前
   # %ar     Author の相対日付
+  # %an     Author の名前
+  # %ae     Author のメールアドレス
+  # %cd     Commiter の日付
+  # %cr     Commiter の相対日付
+  # %cn     Commiter の名前
+  # %ce     Commiter のメールアドレス
   # %s      コミットメッセージ
   # %d      ブランチ/タグ名
   # %C([color]) これ以降の出力をcolorに変える
