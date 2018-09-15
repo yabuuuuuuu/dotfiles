@@ -8,7 +8,7 @@ set -eu
 function safe_link () {
   base_src="$HOME/dotfiles/"
   base_dest="$HOME/"
-  if [ -f "${base_dest}${2}" ]; then
+  if [ -e "${base_dest}${2}" ]; then
     echo "INFO: exists '${2}'. rename it to '${2}.old'. "
     mv "${base_dest}${2}" "${base_dest}${2}.old"
   fi
@@ -19,7 +19,7 @@ function safe_link () {
 function safe_copy () {
   base_src="$HOME/dotfiles/"
   base_dest="$HOME/"
-  if [ -f "${base_dest}${2}" ]; then
+  if [ -e "${base_dest}${2}" ]; then
     echo "INFO: exists '${2}'. rename it to '${2}.old'. "
     mv "${base_dest}${2}" "${base_dest}${2}.old"
   fi
@@ -40,6 +40,7 @@ safe_link "emacs.d" ".emacs.d"
 
 # git
 safe_link "gitconfig_common" ".gitconfig_common"
+safe_link "git_templates" ".git_templates"
 safe_copy "gitconfig_template" ".gitconfig"
 safe_copy "git-authors" ".git-authors"
 
