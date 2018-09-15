@@ -14,6 +14,21 @@ fi
 # rbenv
 [[ -d ~/.rbenv  ]] && eval "$(rbenv init -)"
 
+# pyenv + virtual env
+if which pyenv > /dev/null; then
+  eval "$(pyenv init -)"
+fi
+if which pyenv-virtualenv-init > /dev/null; then
+  eval "$(pyenv virtualenv-init -)"
+fi
+# https://github.com/pyenv/pyenv-virtualenv
+# List all available versions
+#   pyenv install -l
+# create a virtualenv for the Python version used with pyenv
+#   pyenv virtualenv 2.7.15 fabric1
+#   pyenv versions
+#   pyenv local fabric1
+
 # Go lang via brew
 if [ -x "`which go`" ]; then
   export PATH=$PATH:/usr/local/opt/go/libexec/bin
