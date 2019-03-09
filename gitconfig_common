@@ -18,6 +18,9 @@
   # nothing, matching, upstream, simple(default), current
   default = upstream
 
+[ghq]
+  root = ~/ghq
+
 [alias]
   st = status
   co = checkout
