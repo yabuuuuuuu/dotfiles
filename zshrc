@@ -114,6 +114,10 @@ setopt rm_star_wait # 特定の対象へのrm実行前に10秒待ち，その後
 
 
 ### 環境依存設定の読み込み
+# docker
+if type docker >/dev/null 2>&1; then
+    source ~/.zshrc_docker
+fi
 # Mac用
 if [ -f ~/.zshrc_mac ]; then
     source ~/.zshrc_mac
