@@ -1,0 +1,27 @@
+/*
+ * Hide horizontal tabs at the top of the window
+ * https://github.com/piroor/treestyletab/wiki/Code-snippets-for-custom-style-rules#hide-horizontal-tabs-at-the-top-of-the-window-1349-1672-2147
+ */
+#main-window[tabsintitlebar="true"]:not([extradragspace="true"]) #TabsToolbar > .toolbar-items {
+    opacity: 0;
+    pointer-events: none;
+}
+#main-window:not([tabsintitlebar="true"]) #TabsToolbar {
+    visibility: collapse !important;
+}
+
+/*
+ * Hide the tree style tab header at the top of the sidebar
+ * https://github.com/piroor/treestyletab/wiki/Code-snippets-for-custom-style-rules#hide-the-tree-style-tab-header-at-the-top-of-the-sidebar
+ */
+#sidebar-box[sidebarcommand="treestyletab_piro_sakura_ne_jp-sidebar-action"] #sidebar-header {
+    display: none;
+}
+#sidebar-box[sidebarcommand="verticaltabsreloaded_go-dev_de-sidebar-action"] #sidebar-header {
+    display: none;
+}
+/*
+#sidebar-header {
+  display: none;
+}
+*/
