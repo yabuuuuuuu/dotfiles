@@ -1,3 +1,6 @@
 [submodule "zsh_completions.d/zsh-completions"]
 	path = zsh_completions.d/zsh-completions
 	url = https://github.com/zsh-users/zsh-completions.git
+[submodule "zplug"]
+	path = zplug
+	url = https://github.com/zplug/zplug.git

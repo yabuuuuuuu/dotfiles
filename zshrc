@@ -1,68 +1,19 @@
-### 基本設定
-autoload -U colors; colors # カラー表示を有効
-export LANG=en_US.UTF-8
-ulimit -u unlimited # 1ユーザあたりのプロセス数上限
+# zmodload zsh/zprof
+DOT_PATH="${HOME}/dotfiles"
+ZPLUG_HOME="${HOME}/.zplug"
+LANG=en_US.UTF-8
+ulimit -u unlimited
 
-
-### key bind(Emacs)
-bindkey -e
-
-
-### prompt
-case ${UID} in
-# root
-0)
-    PROMPT="%B[%F{cyan}%/%f@%F{green}%M%f]
-%F{red}%n%f #%b "
-    ;;
-# 一般ユーザ
-*)
-    PROMPT="%B[%F{cyan}%/%f@%F{green}%M%f]
-%F{green}%n%f $%b "
-    ;;
-esac
-
-RPROMPT="%*"
-
-
-# gitがある環境の場合
-if type git > /dev/null 2>&1; then
-    # 右プロンプト
-    precmd(){
-        RPROMPT='$(__git_ps1 "[%s]")%*'
-    }
-    source ~/.zsh_completions.d/git-completion/git-prompt.sh
-    setopt prompt_subst # プロンプト内で変数を展開
-    GIT_PS1_SHOWDIRTYSTATE=1 # 未stageの変更があれば「*」 stage済の変更があれば「+」
-    GIT_PS1_SHOWSTASHSTATE=1 # stashが存在すれば「$」
-    GIT_PS1_SHOWUNTRACKEDFILES=1 # untrackなファイルがあれば「%」
-    GIT_PS1_SHOWUPSTREAM="verbose" # コミットの差分状態を表示(下記)
-    #         | upstream | local | eq |
-    # auto    |    <     |   >   | =  |
-    # verbose |   u-N    |  u+N  | =  |
-    #GIT_PS1_DESCRIBE_STYLE="default"
-    GIT_PS1_SHOWCOLORHINTS=0 # DIRTYSTATEが有効な時，カラー表示
-
-    # git系コマンドの補完, 最近のzshは同梱らしい
-    #zstyle ':completion:*:*:git:*' script ~/.zsh_completions.d/git-completion/git-completion.bash
-    #zstyle ':completion:*:*:git:*' script ~/.zsh_completions.d/git-completion/git-completion.zsh
-    #fpath=(~/.zsh_completions.d/git-completion $fpath)
-fi
-
-# zsh-completionsによる補完強化
-fpath=(~/.zsh_completions.d/zsh-completions/src $fpath)
-
-
-### 補完関連
-autoload -Uz compinit; compinit # 補完有効
-#autoload -Uz predict-on; predict-on # 先行補完を有効
+bindkey -e # emacs bind
 setopt correct # スペルミスの訂正を行う
 setopt list_packed # compact viewを有効
 setopt no_beep # beepを鳴らさない
 setopt nolistbeep # beepを鳴らさない
+setopt notify # background jobの状態報告を即座に行う
+setopt rm_star_wait # 特定の対象へのrm実行前に10秒待ち，その後確認する
 
 
-### history
+##### history
 HISTFILE=~/.zsh_history
 HISTSIZE=10000000
 SAVEHIST=10000000
@@ -73,16 +24,135 @@ setopt hist_ignore_space # 先頭がスペースのコマンドは記憶しな�
 setopt hist_no_functions # 関数定義は記憶しない
 setopt hist_no_store # historyコマンドは記憶しない
 setopt hist_reduce_blanks # 余分なスペースを取り除く
+setopt inc_append_history # 履歴をインクリメンタルに追加
 setopt share_history # historyを異なるzsh間で共有
+
+
+##### load
+autoload -Uz compinit
+source "${ZPLUG_HOME}/init.zsh"
+
+zplug "zsh-users/zsh-autosuggestions"
+zplug "zsh-users/zsh-completions"
+zplug "zdharma/fast-syntax-highlighting"
+zplug "momo-lab/zsh-abbrev-alias"
+zplug "zdharma/history-search-multi-word"
+zplug "mollifier/cd-gitroot"
+zplug "djui/alias-tips"
+zplug "junegunn/fzf-bin", from:gh-r, as:command, rename-to:fzf
+zplug "junegunn/fzf", as:command, use:bin/fzf-tmux
+zplug "motemen/ghq", as:command, from:gh-r
+zplug "stedolan/jq", from:gh-r, as:command, rename-to:jq
+zplug "b4b4r07/emoji-cli", on:"stedolan/jq"
+# zplug "mrowa44/emojify", as:command
+zplug "b4b4r07/enhancd", use:init.sh
+zplug "denysdovhan/spaceship-prompt", use:spaceship.zsh, as:theme
+
+# 未インストール項目をインストールする
+#if ! zplug check --verbose; then
+#    printf "Install? [y/N]: "
+#    if read -q; then
+#        echo; zplug install
+#    fi
+#fi
+
+zplug load
+
+### zsh-abbrev-alias
+abbrev-alias -g L="less +F"
+# git push origin B<push space key>
+abbrev-alias -f B="git symbolic-ref --short HEAD"
+
+### emoji-cli
+bindkey '^xe' emoji::cli
+bindkey '^x^e' emoji::cli
+
+### enhancd
+ENHANCD_HOOK_AFTER_CD=ls
+
+### prompt
+# 軽量化のため
+# https://github.com/denysdovhan/spaceship-prompt/blob/master/spaceship.zsh#L41
+SPACESHIP_PROMPT_ORDER=(
+  time          # Time stampts section
+  user          # Username section
+  dir           # Current directory section
+  host          # Hostname section
+  git           # Git section (git_branch + git_status)
+#   hg            # Mercurial section (hg_branch  + hg_status)
+  package       # Package version
+  node          # Node.js section
+  ruby          # Ruby section
+#   elm           # Elm section
+#   elixir        # Elixir section
+#   xcode         # Xcode section
+#   swift         # Swift section
+  golang        # Go section
+  php           # PHP section
+#   rust          # Rust section
+#   haskell       # Haskell Stack section
+#   julia         # Julia section
+  docker        # Docker section
+#   aws           # Amazon Web Services section
+  venv          # virtualenv section
+#   conda         # conda virtualenv section
+  pyenv         # Pyenv section
+#   dotnet        # .NET section
+#   ember         # Ember.js section
+  kubecontext   # Kubectl context section
+#   terraform     # Terraform workspace section
+  exec_time     # Execution time
+  line_sep      # Line break
+  battery       # Battery level and status
+#   vi_mode       # Vi-mode indicator
+  jobs          # Background jobs indicator
+  exit_code     # Exit code section
+  char          # Prompt character
+)
+SPACESHIP_TIME_SHOW=true
+# SPACESHIP_USER_SHOW=always
+# SPACESHIP_HOST_SHOW=always
+SPACESHIP_HOST_SHOW_FULL=true
+SPACESHIP_DIR_TRUNC=5
+SPACESHIP_DIR_LOCK_SYMBOL=🔐
+SPACESHIP_GIT_BRANCH_PREFIX=🐙
+SPACESHIP_BATTERY_THRESHOLD=75
+SPACESHIP_EXIT_CODE_SHOW=true
+SPACESHIP_BATTERY_SYMBOL_CHARGING=⬆
+
+
+##### functions
 # historyから除外するコマンドの指定(ls,cd,rm,man系)
-zshaddhistory(){
+zshaddhistory() {
     local line=${1%%$'\n'}
     local cmd=${line%% *}
     [[ ${cmd} != (l|l[sal]) && ${cmd} != (c|cd) && ${cmd} != (r[mr]) && ${cmd} != (m|man) ]]
 }
 
+# cdの後にls
+function lcd() {
+   builtin cd $@
+   ls
+}
 
-### lsのエイリアス（linuxとBSD系でオプションが違う）
+# ghq + fzf
+function fgh() {
+  local dir
+  dir=$(ghq list > /dev/null | fzf-tmux --height 40% --reverse +m) &&
+    cd $(ghq root)/$dir
+}
+
+# fbr - checkout git branch (including remote branches)
+function fbr() {
+  local branches branch
+  branches=$(git branch --all | grep -v HEAD) &&
+  branch=$(echo "$branches" |
+           fzf-tmux --height 40% -d $(( 2 + $(wc -l <<< "$branches") )) +m) &&
+  git checkout $(echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##")
+}
+
+
+##### aliases
 case "${OSTYPE}" in
 darwin*|freebsd*)
   alias ls="ls -G"
@@ -94,73 +164,58 @@ esac
 alias ll="ls -lh"
 alias la="ls -lah"
 
-
-### cd / auto pushd関連
-#setopt auto_cd # ディレクトリ名で勝手にcd
-setopt auto_pushd # 自動でpushd(cd -[tab])
-DIRSTACKSIZE=100
-setopt pushd_ignore_dups # 同一ディレクトリは古い方を削除する
-setopt pushd_to_home # 引数を省略した場合は$HOMEへ移動
-# cdのあとにlsを自動で実行
-function cd(){
-    builtin cd $@
-    ls
-}
-
-
-### その他設定
-setopt notify # background jobの状態報告を即座に行う
-setopt rm_star_wait # 特定の対象へのrm実行前に10秒待ち，その後確認する
-
-
-### 環境依存設定の読み込み
-# docker
 if type docker >/dev/null 2>&1; then
-    source ~/.zshrc_docker
+  # 停止しているコンテナの削除
+  alias drm='docker rm $(docker ps -a -q)'
+
+  # REPOSITORYが<none>なイメージの削除
+  #alias drmi="docker rmi $(docker images | awk '/^<none>/ { print $3 }')"
+  alias drmi="docker images | awk '/^<none>/ { print $3 }' | xargs docker rmi"
+
+  # Select a docker container to start and attach to
+  function fda() {
+    local cid
+    cid=$(docker ps -a | sed 1d | fzf -1 -q "$1" | awk '{print $1}')
+
+    [ -n "$cid" ] && docker start "$cid" && docker attach "$cid"
+  }
+
+  # Select a running docker container to stop
+  function ds() {
+    local cid
+    cid=$(docker ps | sed 1d | fzf -q "$1" | awk '{print $1}')
+
+    [ -n "$cid" ] && docker stop "$cid"
+  }
 fi
+
+
+##### include
+function zc(){
+  if [ ! -e "~/${1}.zwc" ] || [ "${DOT_DOT_PATH}/${1}" -nt "~/${1}.zwc" ]; then
+#     zcompile "~/${1}"
+  fi
+}
 # Mac用
 if [ -f ~/.zshrc_mac ]; then
-    source ~/.zshrc_mac
+  zc ".zshrc_mac"
+  source ~/.zshrc_mac
 fi
 
 # FreeBSD用
 if [ -f ~/.zshrc_bsd ]; then
-    source ~/.zshrc_bsd
+  zc ".zshrc_bsd"
+  source ~/.zshrc_bsd
 fi
 
 # ローカル設定
 if [ -f ~/.zshrc_local ]; then
-    source ~/.zshrc_local
+  zc ".zshrc_local"
+  source ~/.zshrc_local
 fi
 
-#################################################
-# プロンプト表示フォーマットのメモ
-# http://zsh.sourceforge.net/Doc/Release/zsh_12.html#SEC40
-#################################################
-# %% %を表示
-# %) )を表示
-# %l 端末名省略形
-# %M ホスト名(FQDN)
-# %m ホスト名(サブドメイン)
-# %n ユーザー名
-# %y 端末名
-# %# rootなら#、他は%を表示
-# %? 直前に実行したコマンドの結果コード
-# %d ワーキングディレクトリ %/ でも可
-# %~ ホームディレクトリからのパス
-# %h ヒストリ番号 %! でも可
-# %a The observed action, i.e. "logged on" or "logged off".
-# %S (%s) 反転モードの開始/終了 %S abc %s とするとabcが反転
-# %U (%u) 下線モードの開始/終了 %U abc %u とするとabcに下線
-# %B (%b) 強調モードの開始/終了 %B abc %b とするとabcを強調
-# %t 時刻表示(12時間単位、午前/午後つき) %@ でも可
-# %T 時刻表示(24時間表示)
-# %* 時刻表示(24時間表示秒付き)
-# %w 日表示(dd) 日本語だと 曜日 日
-# %W 年月日表示(mm/dd/yy)
-# %D 年月日表示(yy-mm-dd)
-# %F 文字の色(%fで終了) *1
-# %K 文字背景の色(%kで終了) *1
-#
-# *1:色は基本だけなら、0:black、1:red、2:green、3:yellow、4:blue、5:magenta、6:cyan、7:whiteが利用できる。数字は色の番号。
+zc ".zshrc"
 
+if type zprof >/dev/null 2>&1; then
+  zprof
+fi
