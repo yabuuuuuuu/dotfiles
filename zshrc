@@ -61,7 +61,7 @@ zplug load
 ### zsh-abbrev-alias
 abbrev-alias -g L="less +F"
 # git push origin B<push space key>
-abbrev-alias -f B="git symbolic-ref --short HEAD"
+abbrev-alias -g -e B='$(git symbolic-ref --short HEAD 2> /dev/null)'
 
 ### emoji-cli
 bindkey '^xe' emoji::cli
