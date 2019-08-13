@@ -46,7 +46,14 @@ zplug "stedolan/jq", from:gh-r, as:command, rename-to:jq
 zplug "b4b4r07/emoji-cli", on:"stedolan/jq"
 # zplug "mrowa44/emojify", as:command
 zplug "b4b4r07/enhancd", use:init.sh
-zplug "denysdovhan/spaceship-prompt", use:spaceship.zsh, as:theme
+
+source "${DOT_PATH}"/scripts/vercomp.zsh
+vercomp "${ZSH_VERSION}" "5.2.0"
+if [[ $? -le 1 ]]; then # 5.2.0+
+  zplug "denysdovhan/spaceship-prompt", use:spaceship.zsh, as:theme
+else
+  echo "spaceship-prompt is not loaded: ZSH_VERSION ${ZSH_VERSION} < 5.2.0"
+fi
 
 # 未インストール項目をインストールする
 #if ! zplug check --verbose; then
