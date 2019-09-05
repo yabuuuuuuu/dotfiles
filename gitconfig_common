@@ -2,6 +2,7 @@
   editor = 'vim'
   precomposeunicode = true
   quotepath = false
+  ignorecase = false
 
 [color]
   ui = auto
