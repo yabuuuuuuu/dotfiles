@@ -3,4 +3,8 @@
 
 [user]
 	name = 
-	email = 
+	email =
+	signingkey =
+
+[gpg]
+	#program = /usr/local/MacGPG2/bin/gpg2

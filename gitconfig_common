@@ -15,6 +15,9 @@
 [init]
   templatedir = ~/.git_templates
 
+[commit]
+  gpgsign = true
+
 [push]
   # nothing, matching, upstream, simple(default), current
   default = upstream
