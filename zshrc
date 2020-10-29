@@ -90,7 +90,6 @@ SPACESHIP_PROMPT_ORDER=(
   package       # Package version
   node          # Node.js section
   ruby          # Ruby section
-#   elm           # Elm section
 #   elixir        # Elixir section
 #   xcode         # Xcode section
 #   swift         # Swift section
@@ -100,13 +99,13 @@ SPACESHIP_PROMPT_ORDER=(
 #   haskell       # Haskell Stack section
 #   julia         # Julia section
   docker        # Docker section
-#   aws           # Amazon Web Services section
+  aws           # Amazon Web Services section
   venv          # virtualenv section
 #   conda         # conda virtualenv section
   pyenv         # Pyenv section
 #   dotnet        # .NET section
 #   ember         # Ember.js section
-  kubecontext   # Kubectl context section
+  kubectl       # Kubectl context section
 #   terraform     # Terraform workspace section
   exec_time     # Execution time
   line_sep      # Line break
