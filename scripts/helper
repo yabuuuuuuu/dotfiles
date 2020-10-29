@@ -3,10 +3,10 @@ DEST_DIR="${HOME}"
 
 # $1=src, $2=dest
 function safe_link () {
-  SRC="${SRC_DIR}/${1}"
-  DEST="${DEST_DIR}/${2}"
+  local SRC="${SRC_DIR}/${1}"
+  local DEST="${DEST_DIR}/${2}"
   if [[ -e "${DEST}" ]]; then
-    BUP="${DEST}.$(date +%Y%m%d_%H-%M-%S)"
+    local BUP="${DEST}.$(date +%Y%m%d_%H-%M-%S)"
     echo "renamed '${DEST}' to '${BUP}'. "
     mv "${DEST}" "${BUP}"
   fi
@@ -14,18 +14,18 @@ function safe_link () {
 }
 
 function safe_copy () {
-  SRC="${SRC_DIR}/${1}"
-  DEST="${DEST_DIR}/${2}"
+  local SRC="${SRC_DIR}/${1}"
+  local DEST="${DEST_DIR}/${2}"
   if [[ -e "${DEST}" ]]; then
-    BUP="${DEST}.$(date +%Y%m%d_%H-%M-%S)"
+    local BUP="${DEST}.$(date +%Y%m%d_%H-%M-%S)"
     echo "renamed '${DEST}' to '${BUP}'. "
     mv "${DEST}" "${BUP}"
   fi
-  cp -v "${DEST}" "${BUP}"
+  cp -v "${SRC}" "${DEST}"
 }
 
 function safe_delete () {
-  TARGET="${DEST_DIR}/${1}"
+  local TARGET="${DEST_DIR}/${1}"
   if [[ -L "${TARGET}" ]]; then
     echo "deleted '${TARGET}'"
     rm "${TARGET}"
