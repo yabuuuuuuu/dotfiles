@@ -41,7 +41,7 @@ zplug "mollifier/cd-gitroot"
 zplug "djui/alias-tips"
 zplug "junegunn/fzf-bin", from:gh-r, as:command, rename-to:fzf
 zplug "junegunn/fzf", as:command, use:bin/fzf-tmux
-zplug "motemen/ghq", as:command, from:gh-r
+zplug "x-motemen/ghq", as:command, from:gh-r, rename-to:ghq
 zplug "stedolan/jq", from:gh-r, as:command, rename-to:jq
 zplug "b4b4r07/emoji-cli", on:"stedolan/jq"
 # zplug "mrowa44/emojify", as:command
