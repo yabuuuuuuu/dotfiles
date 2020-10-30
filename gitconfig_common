@@ -18,6 +18,9 @@
 [commit]
   gpgsign = true
 
+[pull]
+  rebase = true
+
 [push]
   # nothing, matching, upstream, simple(default), current
   default = upstream
